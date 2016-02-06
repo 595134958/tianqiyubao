@@ -1,1 +1,1 @@
-这是一个天气预报的APP# tianqiyubao
+这是一个天气预报的APP
