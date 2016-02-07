@@ -1,8 +1,8 @@
 package com.example.tianqi.model;
 
 /**
- * city(å¸‚ä¿¡æ¯è¡¨):idæ˜¯è‡ªå¢é•¿ä¸»é”®ï¼ŒcityNameè¡¨ç¤ºåŸå¸‚åï¼ŒcityCodeè¡¨ç¤ºå¸‚çº§ä»£å·ï¼Œ
- * provinceIdè¡¨ç¤ºå…³è”provinceè¡¨çš„å¤–é”®hahahahah
+ * city(ÊĞĞÅÏ¢±í):idÊÇ×ÔÔö³¤Ö÷¼ü£¬cityName±íÊ¾³ÇÊĞÃû£¬cityCode±íÊ¾ÊĞ¼¶´úºÅ£¬
+ * provinceId±íÊ¾¹ØÁªprovince±íµÄÍâ¼ü
  */
 public class City {
 	private int id;
