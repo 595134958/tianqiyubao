@@ -5,8 +5,12 @@ import java.util.List;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -46,9 +50,18 @@ public class ChooseAreaActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.choose_area);
+
+		SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(this);
+		if (prefs.getBoolean("city_selected", false)) {//如果city_selected等于true，直接跳转到天气信息页面
+			Intent intent = new Intent(this, WeatherActivity.class);
+			startActivity(intent);
+			finish();
+		}
+
 		titleText = (TextView) findViewById(R.id.title_text);
 		listView = (ListView) findViewById(R.id.list_view);
-		
+
 		adapter = new ArrayAdapter<String>(this,
 				android.R.layout.simple_list_item_1, dataList);
 		listView.setAdapter(adapter);
@@ -64,12 +77,20 @@ public class ChooseAreaActivity extends Activity {
 				} else if (currentLevel == LEVEL_CITY) {
 					selectedCity = cityList.get(position);// 当前选中的城市
 					queryCounties();
+				} else if (currentLevel == LEVEL_COUNTY) {	
+					String countyCode = countyList.get(position)
+							.getCountyCode();// 获取选中的县级代号
+					Intent intent = new Intent(ChooseAreaActivity.this,
+							WeatherActivity.class);
+					intent.putExtra("county_code", countyCode);// 向WeatherActivity活动传递选中的县级代号
+					startActivity(intent);
+					finish();
 				}
 			}
 		});
-		
+
 		queryProvinces();// 加载省级数据
-		
+
 	}
 
 	/**
@@ -81,10 +102,10 @@ public class ChooseAreaActivity extends Activity {
 			dataList.clear();// 清空集合里的数据
 			for (Province province : provinceList) {
 				dataList.add(province.getProvinceName());// 将省名存储到dataList中
-				
+
 			}
 			adapter.notifyDataSetChanged();// 刷新adapter
-			//listView.setSelection(0);
+			// listView.setSelection(0);
 			titleText.setText("中国");// 更改标题
 			currentLevel = LEVEL_PROVINCE;
 		} else {
@@ -103,7 +124,7 @@ public class ChooseAreaActivity extends Activity {
 				dataList.add(city.getCityName());// 将城市名存储到dataList中
 			}
 			adapter.notifyDataSetChanged();// 刷新adapter
-			//listView.setSelection(0);
+			// listView.setSelection(0);
 			titleText.setText(selectedProvince.getProvinceName());// 更改标题
 			currentLevel = LEVEL_CITY;
 		} else {
@@ -122,7 +143,7 @@ public class ChooseAreaActivity extends Activity {
 				dataList.add(county.getCountyName());// 将县名存储到dataList中
 			}
 			adapter.notifyDataSetChanged();// 刷新adapter
-			//listView.setSelection(0);
+			// listView.setSelection(0);
 			titleText.setText(selectedCity.getCityName());// 更改标题
 			currentLevel = LEVEL_COUNTY;
 		} else {
@@ -134,7 +155,7 @@ public class ChooseAreaActivity extends Activity {
 	 * 根据传入的代号和类型从服务器上查询省市县数据
 	 */
 	private void queryFromServer(final String code, final String type) {
-		
+
 		String address;
 		if (!TextUtils.isEmpty(code)) {
 			address = "http://www.weather.com.cn/data/list3/city" + code

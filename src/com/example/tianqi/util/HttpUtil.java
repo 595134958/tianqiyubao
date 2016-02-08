@@ -6,6 +6,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import android.util.Log;
+
 public class HttpUtil {// 网络连接工具类
 	public static void sendHttpRequest(final String address,
 			final HttpCallbackListener listener) {
@@ -15,7 +17,6 @@ public class HttpUtil {// 网络连接工具类
 			public void run() {
 				HttpURLConnection connection = null;
 				try {
-					
 					URL url = new URL(address);
 					connection = (HttpURLConnection) url.openConnection();
 					connection.setRequestMethod("GET");
