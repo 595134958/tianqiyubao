@@ -1,21 +1,25 @@
 package com.example.tianqi.activity;
 
 import com.example.tianqi.R;
+import com.example.tianqi.receiver.AutoUpdateReceiver;
+import com.example.tianqi.service.AutoUpdateService;
 import com.example.tianqi.util.HttpCallbackListener;
 import com.example.tianqi.util.HttpUtil;
 import com.example.tianqi.util.Utility;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-public class WeatherActivity extends Activity {
+public class WeatherActivity extends Activity implements OnClickListener {
 	private LinearLayout weatherInfoLayout;
 	private TextView cityNameText;// 用于显示城市名
 	private TextView publishText;// 用于显示发布时间
@@ -23,11 +27,19 @@ public class WeatherActivity extends Activity {
 	private TextView temp1Text;// 用于显示天气1
 	private TextView temp2Text;// 用于显示天气2
 	private TextView currentDateText;// 用于显示当前日期
+	private Button switchCity;// 切换城市
+	private Button refreshWeather;// 手动更新天气
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.weather_layout);
+
+		switchCity = (Button) findViewById(R.id.switch_city);
+		refreshWeather = (Button) findViewById(R.id.refresh_weather);
+		switchCity.setOnClickListener(this);
+		refreshWeather.setOnClickListener(this);
+
 		weatherInfoLayout = (LinearLayout) findViewById(R.id.weather_info_layout);
 		cityNameText = (TextView) findViewById(R.id.city_name);
 		publishText = (TextView) findViewById(R.id.publish_text);
@@ -81,7 +93,7 @@ public class WeatherActivity extends Activity {
 						// 从服务器返回的数据中解析出天气代号
 						String[] array = response.split("\\|");
 						if (array != null && array.length == 2) {
-							String weatherCode = array[1];							
+							String weatherCode = array[1];
 							queryWeatherInfo(weatherCode);
 						}
 					}
@@ -128,5 +140,36 @@ public class WeatherActivity extends Activity {
 		currentDateText.setText(prefs.getString("current_date", ""));
 		weatherInfoLayout.setVisibility(View.VISIBLE);// 显示控件
 		cityNameText.setVisibility(View.VISIBLE);// 显示控件
+
+		// 启动自动更新天气服务
+		Intent intent = new Intent(this, AutoUpdateService.class);
+		startService(intent);
+	}
+
+	/**
+	 * 按钮点击事件
+	 */
+	@Override
+	public void onClick(View v) {
+		switch (v.getId()) {
+		case R.id.switch_city:// 回到选择所在地
+			Intent intent = new Intent(this, ChooseAreaActivity.class);
+			intent.putExtra("from_weather_activity", true);
+			startActivity(intent);
+			finish();
+			break;
+		case R.id.refresh_weather:// 刷新天气信息
+			publishText.setText("同步中...");
+			SharedPreferences prefs = PreferenceManager
+					.getDefaultSharedPreferences(this);
+			String weatherCode = prefs.getString("weather_code", "");// 从SharedPreferences读取保存的天气代号
+			if (!TextUtils.isEmpty(weatherCode)) {
+				queryWeatherInfo(weatherCode);// 重新获取天气信息
+			}
+			break;
+		default:
+			break;
+		}
+
 	}
 }

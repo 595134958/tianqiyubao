@@ -45,15 +45,17 @@ public class ChooseAreaActivity extends Activity {
 	private Province selectedProvince;// 选中的省份
 	private City selectedCity;// 选中的城市
 	private int currentLevel;// 当前选中的级别
+	private boolean isFromWeatherActivity;// 是否从WeatherActivity中跳转过来
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.choose_area);
-
+		setContentView(R.layout.choose_area);		
 		SharedPreferences prefs = PreferenceManager
 				.getDefaultSharedPreferences(this);
-		if (prefs.getBoolean("city_selected", false)) {//如果city_selected等于true，直接跳转到天气信息页面
+		isFromWeatherActivity = getIntent().getBooleanExtra(
+				"from_weather_activity", false);
+		if (prefs.getBoolean("city_selected", false) && !isFromWeatherActivity) {// 如果city_selected等于true，isFromWeatherActivity等于true,直接跳转到天气信息页面
 			Intent intent = new Intent(this, WeatherActivity.class);
 			startActivity(intent);
 			finish();
@@ -77,7 +79,7 @@ public class ChooseAreaActivity extends Activity {
 				} else if (currentLevel == LEVEL_CITY) {
 					selectedCity = cityList.get(position);// 当前选中的城市
 					queryCounties();
-				} else if (currentLevel == LEVEL_COUNTY) {	
+				} else if (currentLevel == LEVEL_COUNTY) {
 					String countyCode = countyList.get(position)
 							.getCountyCode();// 获取选中的县级代号
 					Intent intent = new Intent(ChooseAreaActivity.this,
@@ -167,7 +169,7 @@ public class ChooseAreaActivity extends Activity {
 		HttpUtil.sendHttpRequest(address, new HttpCallbackListener() {
 
 			@Override
-			public void onFinish(String response) {
+			public void onFinish(String response) {				
 				boolean result = false;
 				if ("province".equals(type)) {
 					result = Utility.handleProvincesResponse(weatherDB,
@@ -185,7 +187,7 @@ public class ChooseAreaActivity extends Activity {
 					runOnUiThread(new Runnable() {
 
 						@Override
-						public void run() {
+						public void run() {						
 							closeProgressDialog();// 关闭进度对话框
 							if ("province".equals(type)) {
 								queryProvinces();
@@ -249,6 +251,10 @@ public class ChooseAreaActivity extends Activity {
 		} else if (currentLevel == LEVEL_CITY) {
 			queryProvinces();// 返回到省列表
 		} else {
+			if (isFromWeatherActivity) {
+				Intent intent = new Intent(this, WeatherActivity.class);
+				startActivity(intent);// 回到天气信息列表
+			}
 			finish();
 		}
 	}
